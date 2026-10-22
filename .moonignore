@@ -1,0 +1,6 @@
+_build/
+.git/
+.venv/
+node_modules/
+.mooncakes/
+*.log
