@@ -4,7 +4,7 @@
 pub fn Packet::diagnose(self : Packet) -> Array[Issue] {
   let issues : Array[Issue] = []
   fn error(code : String, field : String, message : String) -> Unit {
-    issues.push({ severity: "error", code, field, message })
+    issues.push({ severity: "error", code, field, message, })
   }
   match self.message_type() {
     Some(kind) if kind >= 1 && kind <= 8 => {
@@ -13,19 +13,39 @@ pub fn Packet::diagnose(self : Packet) -> Array[Issue] {
         error("message-op", "op", "BOOTP op conflicts with DHCP message type")
       }
     }
-    _ => error("message-type", "option/53", "requires a one-byte DHCP message type 1..8")
+    _ =>
+      error(
+        "message-type", "option/53", "requires a one-byte DHCP message type 1..8",
+      )
   }
-  for (code, length) in [(1, 4), (50, 4), (51, 4), (54, 4), (57, 2), (58, 4), (59, 4)] {
+  for
+    (code, length) in [
+      (1, 4),
+      (50, 4),
+      (51, 4),
+      (54, 4),
+      (57, 2),
+      (58, 4),
+      (59, 4),
+    ] {
     if self.option(code) is Some(value) {
       if value.length() != length {
-        error("option-length", "option/\{code}", "invalid reassembled fixed-width option length")
+        error(
+          "option-length",
+          "option/\{code}",
+          "invalid reassembled fixed-width option length",
+        )
       }
     }
   }
   for code in [3, 6] {
     if self.option(code) is Some(value) {
       if value.length() == 0 || value.length() % 4 != 0 {
-        error("address-list", "option/\{code}", "address list needs a positive multiple of four bytes")
+        error(
+          "address-list",
+          "option/\{code}",
+          "address list needs a positive multiple of four bytes",
+        )
       }
     }
   }
@@ -38,16 +58,25 @@ pub fn Packet::diagnose(self : Packet) -> Array[Issue] {
   }
   if self.option(61) is Some(value) {
     if value.length() < 2 {
-      error("client-id", "option/61", "client identifier needs at least two bytes")
+      error(
+        "client-id", "option/61", "client identifier needs at least two bytes",
+      )
     }
   }
   if self.option(57) is Some(value) {
     if value.length() == 2 && read16(value, 0) < 576 {
-      error("message-size", "option/57", "maximum DHCP message size must be at least 576")
+      error(
+        "message-size", "option/57", "maximum DHCP message size must be at least 576",
+      )
     }
   }
   if (self.header.flags & 32767) != 0 {
-    issues.push({ severity: "warning", code: "reserved-flags", field: "flags", message: "reserved flag bits are set and retained" })
+    issues.push({
+      severity: "warning",
+      code: "reserved-flags",
+      field: "flags",
+      message: "reserved flag bits are set and retained",
+    })
   }
   issues
 }

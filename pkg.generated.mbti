@@ -1,0 +1,94 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "Rindoncreate/moondhcp4"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn decode(Bytes) -> Packet raise DhcpError
+
+pub fn encode(Packet) -> Bytes raise DhcpError
+
+pub fn from_hex(String) -> Bytes raise DhcpError
+
+pub fn profile() -> String
+
+pub fn split_option(Int32, Bytes, Area) -> Array[RawOption] raise DhcpError
+
+pub fn to_hex(Bytes) -> String
+
+// Errors
+pub(all) suberror DhcpError {
+  Malformed(Int32, String)
+  InvalidModel(String)
+  Limit(String)
+} derive(@debug.Debug)
+pub fn DhcpError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+pub(all) enum Area {
+  Main
+  BootFile
+  ServerName
+} derive(Eq, @debug.Debug)
+pub fn Area::equal(Self, Self) -> Bool
+pub fn Area::not_equal(Self, Self) -> Bool
+pub fn Area::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Header {
+  op : Int32
+  htype : Int32
+  hlen : Int32
+  hops : Int32
+  xid : UInt32
+  secs : Int32
+  flags : Int32
+  ciaddr : Bytes
+  yiaddr : Bytes
+  siaddr : Bytes
+  giaddr : Bytes
+  chaddr : Bytes
+  sname : Bytes
+  file : Bytes
+} derive(Eq, @debug.Debug)
+pub fn Header::equal(Self, Self) -> Bool
+pub fn Header::not_equal(Self, Self) -> Bool
+pub fn Header::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Issue {
+  severity : String
+  code : String
+  field : String
+  message : String
+} derive(Eq, @debug.Debug)
+pub fn Issue::equal(Self, Self) -> Bool
+pub fn Issue::not_equal(Self, Self) -> Bool
+pub fn Issue::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Packet {
+  header : Header
+  options : Array[RawOption]
+} derive(Eq, @debug.Debug)
+pub fn Packet::diagnose(Self) -> Array[Issue]
+pub fn Packet::equal(Self, Self) -> Bool
+pub fn Packet::ipv4_list_option(Self, Int32) -> Array[Bytes]? raise DhcpError
+pub fn Packet::message_type(Self) -> Int32?
+pub fn Packet::new(Int32, UInt32, Bytes) -> Self raise DhcpError
+pub fn Packet::not_equal(Self, Self) -> Bool
+pub fn Packet::option(Self, Int32) -> Bytes?
+pub fn Packet::to_repr(Self) -> @debug.Repr
+pub fn Packet::u32_option(Self, Int32) -> UInt32? raise DhcpError
+
+pub(all) struct RawOption {
+  code : Int32
+  data : Bytes
+  area : Area
+} derive(Eq, @debug.Debug)
+pub fn RawOption::equal(Self, Self) -> Bool
+pub fn RawOption::not_equal(Self, Self) -> Bool
+pub fn RawOption::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

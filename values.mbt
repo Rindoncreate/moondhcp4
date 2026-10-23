@@ -1,7 +1,10 @@
 ///|
 /// Read a logical four-byte integer after RFC3396 reassembly. Lease durations
 /// include the full UInt32 domain (0xffffffff is not converted to -1).
-pub fn Packet::u32_option(self : Packet, code : Int) -> UInt? raise DhcpError {
+pub fn Packet::u32_option(
+  self : Packet,
+  code : Int32,
+) -> UInt32? raise DhcpError {
   match self.option(code) {
     None => None
     Some(value) => {
@@ -14,7 +17,10 @@ pub fn Packet::u32_option(self : Packet, code : Int) -> UInt? raise DhcpError {
 }
 
 ///|
-pub fn Packet::ipv4_list_option(self : Packet, code : Int) -> Array[Bytes]? raise DhcpError {
+pub fn Packet::ipv4_list_option(
+  self : Packet,
+  code : Int32,
+) -> Array[Bytes]? raise DhcpError {
   match self.option(code) {
     None => None
     Some(value) => {

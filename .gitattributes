@@ -1,0 +1,9 @@
+* text=auto
+*.mbt text eol=lf
+*.mbti text eol=lf
+*.pkg text eol=lf
+*.mod text eol=lf
+*.py text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
