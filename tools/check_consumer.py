@@ -23,14 +23,20 @@ with tempfile.TemporaryDirectory(prefix='moondhcp4-consumer-') as folder:
     (workspace/'moon.work').write_text('members = [ "library", "consumer" ]\n',encoding='utf8')
     (consumer/'moon.mod').write_text('name = "probe/dhcpconsumer"\nversion = "0.1.0"\nimport { "Rindoncreate/moondhcp4@0.1.0", }\n',encoding='utf8')
     (consumer/'moon.pkg').write_text('import { "Rindoncreate/moondhcp4" @dhcp, }\n',encoding='utf8')
-    (consumer/'consumer_test.mbt').write_text('''///|
-test "external packaged consumer" {
+    (consumer/'consumer.mbt').write_text('''///|
+pub fn lease_after_roundtrip() -> UInt? raise @dhcp.DhcpError {
   let reply = @dhcp.Packet::new(2, 0xffffffffU, b"\\x02\\x00\\x00\\x00\\x00\\x01")
   reply.options.push({ code: 51, data: b"\\xff\\xff\\xff\\xff", area: @dhcp.Main })
   let decoded = @dhcp.decode(@dhcp.encode(reply))
-  assert_eq(decoded.header.xid, 0xffffffffU)
-  assert_eq(decoded.u32_option(51), Some(0xffffffffU))
-  assert_true(decoded.diagnose().is_empty())
+  if decoded.header.xid != 0xffffffffU || !decoded.diagnose().is_empty() {
+    raise @dhcp.InvalidModel("consumer roundtrip failed")
+  }
+  decoded.u32_option(51)
+}
+''',encoding='utf8')
+    (consumer/'consumer_test.mbt').write_text('''///|
+test "external packaged consumer" {
+  assert_eq(@dhcpconsumer.lease_after_roundtrip(), Some(0xffffffffU))
 }
 ''',encoding='utf8')
     for target in ['js','native']:
