@@ -1,0 +1,7 @@
+{
+  "name": "moondhcp4-local-cli",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": { "verify": "node tools/verify.mjs" }
+}
