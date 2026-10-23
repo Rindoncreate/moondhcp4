@@ -15,10 +15,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Install official MoonBit toolchain
         run: |
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
+      - name: Install pinned independent wire reference
+        run: python -m pip install --only-binary=:all: -r tools/requirements.txt
+      - name: Regenerate independent wire partitions and Scapy packets
+        run: |
+          python tools/fixtures.py --check
+          python tools/scapy_reference.py
       - name: Record compiler and format development sources
         run: |
           moon version --all
@@ -30,6 +39,11 @@ jobs:
             moon build --target "$target" --deny-warn
             moon test --target "$target" --deny-warn
           done
+      - name: Verify exported boundary and complete file workflows
+        run: |
+          node tools/compare.mjs
+          node tools/scenarios.mjs
+          python tools/check_built_with_scapy.py
       - name: Export API and package source
         run: |
           moon info
@@ -39,6 +53,7 @@ jobs:
         run: |
           mkdir -p _build/audit
           git diff --binary > _build/audit/formatted.patch
+          python tools/export_ci.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -47,3 +62,4 @@ jobs:
             _build/audit/formatted.patch
             _build/js/debug/build/
             _build/publish/
+            _build/*report.json

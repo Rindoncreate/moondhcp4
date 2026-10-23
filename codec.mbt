@@ -49,22 +49,28 @@ fn parse_area(data : Bytes, start : Int, end : Int, area : Area, output : Array[
 
 ///|
 fn overload(options : Array[RawOption]) -> Int raise DhcpError {
-  let mut value = 0
+  let data : Array[Byte] = []
   let mut seen = false
   for fragment in options {
     if fragment.code == 52 {
       if fragment.area != Main {
         raise InvalidModel("option 52 must occur in the main option area")
       }
-      if seen || fragment.data.length() != 1 {
-        raise InvalidModel("option 52 must have one byte and occur once")
-      }
-      value = fragment.data[0].to_int()
-      if value < 1 || value > 3 {
-        raise InvalidModel("option 52 value must be 1, 2 or 3")
+      for byte in fragment.data {
+        data.push(byte)
       }
       seen = true
     }
+  }
+  if !seen {
+    return 0
+  }
+  if data.length() != 1 {
+    raise InvalidModel("reassembled option 52 must have one byte")
+  }
+  let value = data[0].to_int()
+  if value < 1 || value > 3 {
+    raise InvalidModel("option 52 value must be 1, 2 or 3")
   }
   value
 }

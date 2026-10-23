@@ -1,0 +1,32 @@
+import {spawnSync} from 'node:child_process';
+import {mkdtemp,writeFile,readFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const temp=await mkdtemp(join(tmpdir(),'moondhcp4-'));
+function cli(args,expected){
+  const result=spawnSync(process.execPath,['bin/moondhcp4.mjs',...args],{cwd:root,encoding:'utf8',timeout:15000});
+  if(result.error) throw result.error;
+  assert.equal(result.status,expected,args.join(' ')+'\n'+result.stderr+'\n'+result.stdout);
+  return result.stdout.trim() ? JSON.parse(result.stdout):null;
+}
+const built=join(temp,'discover.bin');
+cli(['build','examples/discover.json',built,'--json'],0);
+cli(['inspect',built,'--json'],0);
+const normalized=join(temp,'normalized.bin');
+cli(['normalize',built,normalized,'--json'],0);
+assert.deepEqual(await readFile(normalized),await readFile(built));
+cli(['build','examples/discover.json',built,'--json'],3);
+cli(['inspect','_build/extracted-discover.bin','--json'],0);
+const truncated=join(temp,'truncated.bin');
+await writeFile(truncated,Buffer.from([1,1,6]));
+cli(['inspect',truncated,'--json'],2);
+const fixtures=JSON.parse(await readFile(join(root,'fixtures/wire.json'),'utf8')).cases;
+const invalid=join(temp,'invalid.bin');
+await writeFile(invalid,Buffer.from(fixtures.find(c=>c.name==='invalid-option-51').hex,'hex'));
+cli(['inspect',invalid,'--json'],1);
+cli(['inspect',join(temp,'missing.bin'),'--json'],3);
+cli(['inspect',built,'--unknown'],64);
+console.log('File CLI: build, inspect, normalize, PCAP payload, semantic/structural errors, no overwrite, missing file and bad invocation verified');
