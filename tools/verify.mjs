@@ -23,4 +23,5 @@ execute(process.execPath,['tools/scenarios.mjs']);
 execute(python,['tools/check_built_with_scapy.py']);
 execute(moon,['info']);
 execute(moon,['package']);
+execute(python,['tools/check_consumer.py']);
 console.log('Verified:',targets.join(', '));
