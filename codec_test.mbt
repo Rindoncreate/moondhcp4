@@ -83,3 +83,30 @@ test "empty unknown option and hexadecimal conversion retain bytes" {
   assert_eq(@moondhcp4.decode(encoded).option(224), Some(b""))
   assert_eq(@moondhcp4.decode(encoded).option(225), None)
 }
+
+///|
+test "typed accessors use logical values and retain unsigned lease times" {
+  let packet = @moondhcp4.Packet::new(2, 0U, b"\x02\x00\x00\x00\x00\x01")
+  packet.options.push({ code: 51, data: b"\xff", area: @moondhcp4.Main })
+  packet.options.push({ code: 51, data: b"\xff\xff\xff", area: @moondhcp4.Main })
+  packet.options.push({ code: 6, data: b"\xc0\x00\x02\x01\xc0\x00\x02\x02", area: @moondhcp4.Main })
+  assert_eq(packet.u32_option(51), Some(0xffffffffU))
+  assert_eq(packet.ipv4_list_option(6), Some([b"\xc0\x00\x02\x01", b"\xc0\x00\x02\x02"]))
+  assert_eq(packet.u32_option(59), None)
+}
+
+///|
+test "wire and fragment resource bounds fail explicitly" {
+  try @moondhcp4.decode(Bytes::from_array(Array::make(65508, (0 : Byte)))) catch {
+    @moondhcp4.Limit(_) => ()
+    _ => fail("unexpected category")
+  } noraise { _ => fail("expected byte limit") }
+  let packet = @moondhcp4.Packet::new(1, 0U, b"\x02\x00\x00\x00\x00\x01")
+  for _ in 0..<4096 {
+    packet.options.push({ code: 224, data: b"", area: @moondhcp4.Main })
+  }
+  try @moondhcp4.encode(packet) catch {
+    @moondhcp4.Limit(_) => ()
+    _ => fail("unexpected category")
+  } noraise { _ => fail("expected fragment limit") }
+}

@@ -7,7 +7,7 @@ prevent source inspection. The receiver uses an exact filename allowlist.
 from pathlib import Path
 import base64,gzip,json
 root=Path(__file__).resolve().parents[1]
-names=['model.mbt','codec.mbt','diagnostics.mbt','codec_test.mbt','reference_test.mbt','bridge/run.mbt','moon.mod','moon.pkg','bridge/moon.pkg','pkg.generated.mbti']
+names=['model.mbt','codec.mbt','values.mbt','diagnostics.mbt','codec_test.mbt','reference_test.mbt','bridge/run.mbt','moon.mod','moon.pkg','bridge/moon.pkg','pkg.generated.mbti']
 files={name:(root/name).read_text(encoding='utf8') for name in names if (root/name).is_file()}
 bridge=root/'_build/js/debug/build/bridge/bridge.js'
 if bridge.is_file(): files['_build/js/debug/build/bridge/bridge.js']=bridge.read_text(encoding='utf8')

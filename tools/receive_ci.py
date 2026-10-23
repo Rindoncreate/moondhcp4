@@ -2,7 +2,7 @@
 from pathlib import Path
 import base64,gzip,json,sys
 root=Path(__file__).resolve().parents[1]
-names={'model.mbt','codec.mbt','diagnostics.mbt','codec_test.mbt','reference_test.mbt','bridge/run.mbt','moon.mod','moon.pkg','bridge/moon.pkg','pkg.generated.mbti','_build/js/debug/build/bridge/bridge.js'}
+names={'model.mbt','codec.mbt','values.mbt','diagnostics.mbt','codec_test.mbt','reference_test.mbt','bridge/run.mbt','moon.mod','moon.pkg','bridge/moon.pkg','pkg.generated.mbti','_build/js/debug/build/bridge/bridge.js'}
 encoded=sys.stdin.read().strip()
 assert len(encoded)<1000000
 raw=gzip.decompress(base64.b64decode(encoded,validate=True))
