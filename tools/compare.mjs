@@ -29,6 +29,17 @@ for(const name of ['discover','offer']){
 const oversized='['.repeat(40)+']'.repeat(40);
 assert.equal(JSON.parse(run('build',oversized)).code,4,'config depth bound');
 for(const spec of ['{}','{"messageType":"1","xid":"4294967296","macHex":"020000000001"}','{"messageType":1,"xid":"1","macHex":"020000000001"}']) assert.equal(JSON.parse(run('build',spec)).code,2,'invalid builder config');
-const report={handwrittenWireAssertions:results.length,independentlyGeneratedScapyMessages:independentlyGenerated.length,normalizationChecked:true,results};
+let seed=0x12345678;
+const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed;};
+const valid=Buffer.from(fixtures[0].hex,'hex');
+let mutationCases=0;
+for(let i=0;i<1500;i++){
+  const data=i<300?valid.subarray(0,i):Buffer.from(valid);
+  if(i>=300) for(let n=0;n<1+random()%8;n++) data[random()%data.length]=random()&255;
+  const result=JSON.parse(run('inspect',data.toString('hex')));
+  assert.ok([0,1,2,4].includes(result.code),'bounded result instead of panic');
+  mutationCases++;
+}
+const report={handwrittenWireAssertions:results.length,independentlyGeneratedScapyMessages:independentlyGenerated.length,mutationCasesWithoutUncaughtFailure:mutationCases,normalizationChecked:true,results};
 await writeFile(new URL('../_build/differential-report.json',import.meta.url),JSON.stringify(report,null,2)+'\n');
-console.log(JSON.stringify({handwrittenWireAssertions:results.length,independentlyGeneratedScapyMessages:independentlyGenerated.length}));
+console.log(JSON.stringify({handwrittenWireAssertions:results.length,independentlyGeneratedScapyMessages:independentlyGenerated.length,mutationCasesWithoutUncaughtFailure:mutationCases}));

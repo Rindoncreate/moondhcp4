@@ -4,3 +4,5 @@ _build/
 node_modules/
 .mooncakes/
 *.log
+__pycache__/
+*.pyc
